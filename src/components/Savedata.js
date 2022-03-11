@@ -1,7 +1,8 @@
-export const savedata = (data) =>{
+export const savedata = (name, data) =>{
     // let anotherdata = data;
+    console.log(data);
     let str = JSON.stringify(data)
-    localStorage.setItem(`${data}`,str);
+    localStorage.setItem(`${name}`,str);
 
 }
 
@@ -13,4 +14,9 @@ export const getdata = () => {
     }
     return archive;
 }
+
+export const deleteItemsinlocalstorage  = (title) => {
+    localStorage.removeItem(title);
+}
+
 
