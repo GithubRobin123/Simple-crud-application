@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {savedata, getdata} from './Savedata';
+import {savedata, getdata, deleteItemsinlocalstorage} from './Savedata';
 
 const Forms = () => {
 
@@ -8,33 +8,39 @@ const Forms = () => {
         imageFile : '',
         blogger_name : ''
     } 
+    const [seartchValue, setSeartchValue] = useState('')
     const [noeData, setNowData] = useState(initialstate);
     const [isToggle, setToggle] = useState(false);
     const [getdatafromlocalhosty, setgetdata] = useState([]);
     useEffect (
         ()=> {
             setgetdata(getdata())
-        }, []
+        }, [isToggle]
     )
 
 
-    const handleChange = (e) =>{
+    const handleChange = async(e) =>{
         const name = e.target.name;
         const value = e.target.value
+        console.log(e.target.value);
+        console.log(e.target.name);
 
-        setNowData(
-           {[name]:value}
-        )
+        console.log(noeData);
+        await setNowData({ ...noeData , [name] : value})
 
-        if(noeData.title && noeData.imageFile && noeData.imageFile){
-            setToggle(!isToggle);
+        if(noeData.title!='' && noeData.blogger_name!='' && noeData.imageFile!=''){
+            console.log("done");
+            await setToggle(!isToggle);
         }
 
     } 
 
-    const handleSubmit = () => {
+    const HandleSubmit = () => {
+        console.log(isToggle);
         if(isToggle){
-        savedata(noeData)
+            console.log('data is saved');
+        savedata(noeData.title, noeData)
+        setToggle(!isToggle)
         }
         else{
             return(
@@ -45,16 +51,59 @@ const Forms = () => {
         }
     }
 
-    const searchMovie = () => [
+    const searchMovie = (e) => {
+        let val = e.target.value;
+        if(val){
+        setSeartchValue(val);
+        setgetdata(
+            getdatafromlocalhosty.filter((element)=>{
+                let data =element.title.split('');
+                return data.includes(val);
+            })
+        )
+        }else{
+            setgetdata(getdata())
 
-    ]
+
+        }
+
+
+    }
+
+    const handleDelete = (item) => {
+        deleteItemsinlocalstorage(item);
+        setgetdata(
+            getdatafromlocalhosty.filter(val=>{
+                return val.title===item
+            })
+        )
+
+
+    }
+
+    const handleEdit = (val) => {
+        const title = prompt('add your updated title');
+        const blogger_name = prompt('add your new bloggername');
+        const file = prompt('add you new file');
+        let ob = {
+            title,
+            blogger_name,
+            file
+
+        }
+        savedata(val, ob);
+
+
+    }
+
+    
 
 
     return(
     <>
 
     <span>Search Movie</span>
-    <input type='search' onChange={searchMovie} / >
+    <input type='search' onChange={searchMovie} value={seartchValue} / >
         <form id='form'>
             <label>
                 Title:
@@ -71,7 +120,7 @@ const Forms = () => {
             type="file" 
             id="imageFile" 
             name='imageFile' 
-            value={noeData.imageFile[0]}
+            value={noeData.imageFile}
             onChange={handleChange} />
             </label>
         
@@ -82,25 +131,25 @@ const Forms = () => {
                 value={noeData.blogger_name}
                 onChange={handleChange} />
             </label>
-            <input type="submit" onClick={handleSubmit} value="Submit" />
+            <input className='btn' type="submit" onClick={HandleSubmit} value="Submit" />
         </form>
 
-        <div>{isToggle?'':<handleSubmit />}</div>
+        <div>{isToggle?<HandleSubmit />:""}</div>
 
         <div>
-            {getdatafromlocalhosty.map(val=>{
+            {getdatafromlocalhosty?getdatafromlocalhosty.map(val=>{
                 return(
                     <>
-                        <div>
+                        <div className='' key={Math.random()*10002384}>
                             <h1>{val.title}</h1>
                             <h3>{val.blogger_name}</h3>
                             <img src={val.imageFile} />
-                            <button>Delete</button>
-                            <button>Edit</button>
+                            <button onClick={()=>handleDelete(val.title)}>Delete</button>
+                            <button onClick={()=> handleEdit(val.title)}>Edit</button>
                         </div>
                     </>
                 )
-            })}
+            }):"plese wait"}
         </div>
 
     </>
